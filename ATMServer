@@ -1,0 +1,186 @@
+package com.wsy.project;
+
+import com.wsy.project.model.Account;
+import com.wsy.project.model.Transaction;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+/**
+ * @className: ATMServer
+ * @date: 2022/5/17  16:55
+ * @description
+ */
+public class ATMServer {
+
+    private static List<Account> accountList = new ArrayList<>();
+
+    private static List<Integer> userIDList = new ArrayList<>();
+
+    private static String accountFilePath = "./resources/account.txt";
+
+    private static String transactionsFilePath = "./resources/transactions.txt";
+
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    public static void main(String[] args) throws IOException {
+        init();
+        Scanner input = new Scanner(System.in);
+
+
+        while (true) {
+            System.out.print("Enter an id:");
+            int id = input.nextInt();
+            while (!userIDList.contains(id)) {
+                System.out.print("The if is nonExistent,please input again:");
+                id = input.nextInt();
+            }
+            // Mainmenu();
+            Account account = accountList.get(id);
+
+            while (true) {
+                Mainmenu();
+                int choice = input.nextInt();
+                switch (choice) {
+                    case 1:
+                        System.out.println("The balance is " + accountList.get(id).getBalance());
+                        break;
+                    case 2:
+                        System.out.println("Enter the amount you want to withdraw:");
+                        double withdrawMoney = input.nextDouble();
+                        account.withdraw(withdrawMoney);
+                        break;
+                    case 3:
+                        System.out.println("Enter the amount you want to deposit:");
+                        double depositMoney = input.nextDouble();
+                        account.deposit(depositMoney);
+                        break;
+                    case 4:
+                        account.displayAll();
+                        break;
+                    case 5:
+                        break;
+                    default:
+                }
+                saveAccountsAsTextFile();
+                if (choice == 5) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void Mainmenu() throws IOException {
+        System.out.println("Main menu");
+        System.out.println("1:check balance");
+        System.out.println("2:withdraw");
+        System.out.println("3:deposit");
+        System.out.println("4:displayALl");
+        System.out.println("5:exit");
+        System.out.println("Enter a choice:");
+    }
+
+    private static void init() {
+        initializeAccounts(accountList);
+        initializeTransactions(accountList);
+    }
+
+    /**
+     * initialize Accounts
+     *
+     * @param accountList
+     * @return
+     */
+    private static void initializeAccounts(List<Account> accountList) {
+        File file = new File(accountFilePath);
+        if (file.exists()) {
+            try {
+                InputStreamReader inputReader = new InputStreamReader(new FileInputStream(file));
+                BufferedReader bf = new BufferedReader(inputReader);
+                String str;
+                while ((str = bf.readLine()) != null) {
+                    String[] split = str.split(",");
+                    if (split.length == 3) {
+                        Account account = new Account();
+                        account.setUserID(Integer.parseInt(split[0]));
+                        account.setBalance(Double.valueOf(split[1]));
+                        account.setDateCreated(sdf.parse(split[2]));
+                        accountList.add(account);
+                    }
+                }
+                bf.close();
+                inputReader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                if (file.createNewFile()) {
+                    for (int i = 0; i < 10; i++) {
+                        accountList.add(new Account(i, 0, new Date()));
+                        saveAccountsAsTextFile();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        for (Account account : accountList) {
+            userIDList.add(account.getUserID());
+        }
+    }
+
+    private static void initializeTransactions(List<Account> accountList) {
+        Map<Integer, List<Transaction>> transactionsMap = new HashMap<>(16);
+
+        File file = new File(transactionsFilePath);
+        if (file.exists()) {
+            try {
+                InputStreamReader inputReader = new InputStreamReader(new FileInputStream(file));
+                BufferedReader bf = new BufferedReader(inputReader);
+                String str;
+                while ((str = bf.readLine()) != null) {
+                    String[] split = str.split(",");
+                    if (split.length == 6) {
+                        Transaction transaction = new Transaction(split[1].toCharArray()[0],
+                                Double.valueOf(split[2]),
+                                Double.valueOf(split[3]),
+                                sdf.parse(split[4]), split[5]);
+                        if (transactionsMap.get(Integer.parseInt(split[0])) != null) {
+                            List<Transaction> transactionsList = transactionsMap.get(Integer.parseInt(split[0]));
+                            transactionsList.add(transaction);
+                            transactionsMap.put(Integer.parseInt(split[0]), transactionsList);
+                        } else {
+                            List<Transaction> transactionsList = new ArrayList<>();
+                            transactionsList.add(transaction);
+                            transactionsMap.put(Integer.parseInt(split[0]), transactionsList);
+                        }
+                    }
+                }
+                bf.close();
+                inputReader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            for (Integer userId : transactionsMap.keySet()) {
+                for (Account account : accountList) {
+                    if (userId == account.getUserID()) {
+                        account.setTransactions(transactionsMap.get(userId));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void saveAccountsAsTextFile() {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(accountFilePath))) {
+            for (Account account : accountList) {
+                bufferedWriter.write(account.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
