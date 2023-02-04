@@ -1,0 +1,111 @@
+package com.wsy.project.model;
+
+
+import com.wsy.project.util.DateTimeUtil;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * @className: Account
+ * @date: 2022/5/17  16:18
+ * @description
+ */
+public class Account implements Serializable {
+    private int userID = 0;
+    private double balance = 0;
+    private Date dateCreated;
+    private List<Transaction> transactions = new ArrayList<>();
+
+    public Account() {
+    }
+
+    public Account(int userID, double balance, Date dateCreated) {
+        this.userID = userID;
+        this.balance = balance;
+        this.dateCreated = dateCreated;
+    }
+
+    public int getUserID() {
+        return userID;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setUserID(int userID) {
+        this.userID = userID;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public void withdraw(double amount) {
+        if (balance - amount < 0) {
+            System.out.println("Sorry, your credit is running low！");
+        } else {
+            this.balance -= amount;
+            Transaction transaction = new Transaction('W', amount, this.balance, new Date(), "WithDraw Operation");
+            transactions.add(transaction);
+            saveTransactionsAsTextFile(userID, transaction);
+        }
+    }
+
+    public void deposit(double amount) {
+        this.balance += amount;
+        Transaction transaction = new Transaction('D', amount, this.balance, new Date(), "Deposit Operation");
+        transactions.add(transaction);
+        saveTransactionsAsTextFile(userID, transaction);
+    }
+
+    public void displayAll() {
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction.toString());
+        }
+    }
+
+    private void saveTransactionsAsTextFile(int userID, Transaction transaction) {
+        FileWriter fw = null;
+        try {
+            //append if exists, otherwise create
+            fw = new FileWriter(new File("./resources/transactions.txt"), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        PrintWriter pw = new PrintWriter(fw);
+        pw.println(userID + "," + transaction.toString());
+        pw.flush();
+        try {
+            fw.flush();
+            pw.close();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return userID + "," + balance + "," + DateTimeUtil.transDate(dateCreated, "yyyy-MM-dd HH:mm:ss") + "\n";
+    }
+}
