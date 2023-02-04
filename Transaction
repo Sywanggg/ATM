@@ -1,0 +1,74 @@
+package com.wsy.project.model;
+
+import com.wsy.project.util.DateTimeUtil;
+
+import java.util.Date;
+
+/**
+ * @className: Transaction
+ * @date: 2022/5/17  16:17
+ * @description
+ */
+public class Transaction {
+    private char type;
+    private double amount;
+    private double balance;
+    private Date dateUpdate;
+    private String description;
+
+    public Transaction() {
+    }
+
+    public char getType() {
+        return type;
+    }
+
+    public void setType(char type) {
+        this.type = type;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public Date getDateUpdate() {
+        return dateUpdate;
+    }
+
+    public void setDateUpdate(Date dateUpdate) {
+        this.dateUpdate = dateUpdate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Transaction(char type, double amount, double balance, Date dateUpdate, String description) {
+        this.type = type;
+        this.amount = amount;
+        this.balance = balance;
+        this.dateUpdate = dateUpdate;
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return type + "," + amount + "," + balance + "," + DateTimeUtil.transDate(dateUpdate, "yyyy-MM-dd HH:mm:ss") + "," + description;
+    }
+}
