@@ -1,0 +1,16 @@
+package com.wsy.project.util;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * @className: DateTimeUtil
+ * @date: 2022/5/18  0:01
+ * @description
+ */
+public class DateTimeUtil {
+    public static String transDate(Date date, String format) {
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(date);
+    }
+}
